@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-manager-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: task-manager
+  template:
+    metadata:
+      labels:
+        app: task-manager
+    spec:
+      containers:
+        - name: task-manager-app
+          image: task-manager-app:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000  # Frontend (React)
+            - containerPort: 5000  # Backend (API)
+          env:
+            - name: MONGO_URL
+              value: "mongodb://mongo-service:27017/taskmanager"
+            - name: JWT_SECRET
+              value: "9f74a3f3c5d5c3a1e14f785f76e093a3f8a3a35e3b1e6f0a5d7b7a9d9c8e8e8e"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: task-manager-service
+spec:
+  selector:
+    app: task-manager
+  type: NodePort
+  ports:
+    - name: frontend
+      port: 3000
+      targetPort: 3000
+      nodePort: 30080
+    - name: backend
+      port: 5000
+      targetPort: 5000
+      nodePort: 30081
